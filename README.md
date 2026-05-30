@@ -25,18 +25,42 @@ Built for penetration testers and CTF players.
 
 ## Installation
 
-**Clone the repo:**
+### Linux / macOS
+
 ```bash
 git clone https://github.com/silas-vale/BruteForcer.git
 cd BruteForcer
-```
-
-**Install dependencies:**
-```bash
 pip install -r requirements.txt
 ```
 
-Requires Python 3.10+.
+### Windows
+
+1. Install [Python 3.10+](https://www.python.org/downloads/) — check **"Add Python to PATH"** during setup
+2. Open Command Prompt or PowerShell:
+
+```powershell
+git clone https://github.com/silas-vale/BruteForcer.git
+cd BruteForcer
+pip install -r requirements.txt
+```
+
+> If `git` isn't installed on Windows, download it from [git-scm.com](https://git-scm.com/download/win)
+
+---
+
+## Wordlist
+
+A `wordlist.txt` is included in this repo with ~1 million common passwords, ready to use out of the box.
+
+```bash
+python bruteforce.py http://target.local/login -u admin -w wordlist.txt --fail-string "Login failed"
+```
+
+You can also use your own wordlist or the built-in rockyou list on Kali Linux:
+
+```
+/usr/share/wordlists/rockyou.txt
+```
 
 ---
 
@@ -68,11 +92,11 @@ python bruteforce.py <url> -u <user> -w <wordlist> [options]
 
 ## Examples
 
-**Basic — single username, rockyou wordlist:**
+**Basic — single username, included wordlist:**
 ```bash
 python bruteforce.py http://target.local/login \
   -u admin \
-  -w /usr/share/wordlists/rockyou.txt \
+  -w wordlist.txt \
   --fail-string "Invalid credentials"
 ```
 
@@ -80,26 +104,17 @@ python bruteforce.py http://target.local/login \
 ```bash
 python bruteforce.py http://target.local/login \
   -U users.txt \
-  -w passwords.txt \
+  -w wordlist.txt \
   -t 20 -v
 ```
 
 **With CSRF token + Burp proxy:**
 ```bash
 python bruteforce.py http://target.local/login \
-  -u admin -w passwords.txt \
+  -u admin -w wordlist.txt \
   -x csrf_token=abc123def456 \
   --proxy http://127.0.0.1:8080 \
   -v
-```
-
-**Custom form fields (e.g. DVWA):**
-```bash
-python bruteforce.py "http://dvwa.local/login.php" \
-  -u admin -w passwords.txt \
-  --user-field username \
-  --pass-field password \
-  --fail-string "Login failed"
 ```
 
 ---
@@ -110,6 +125,63 @@ python bruteforce.py "http://dvwa.local/login.php" \
 2. Dispatches them across a `ThreadPoolExecutor`.
 3. Each thread POSTs the form data and checks the response body for the `--fail-string`.
 4. On the first response **not** containing the fail string, all pending futures are cancelled and credentials are printed.
+
+---
+
+## Testing with DVWA
+
+To safely test the tool locally, use [DVWA](https://github.com/digininja/DVWA) (Damn Vulnerable Web Application).
+
+> **Note:** If you run the tool without a target server running, you will get `Connection refused` errors — this is expected. You must start DVWA (or another target) first.
+
+### Start DVWA with Docker
+
+**Linux / macOS:**
+
+First check if Docker is installed and running:
+```bash
+docker --version
+sudo systemctl status docker
+```
+
+If not installed:
+```bash
+sudo apt install docker.io -y
+sudo systemctl start docker
+```
+
+Then start DVWA (keep this terminal open):
+```bash
+sudo docker run --rm -p 80:80 vulnerables/web-dvwa
+```
+
+**Alternative (if `docker` isn't available):**
+```bash
+sudo apt install podman-docker -y
+docker run --rm -p 80:80 vulnerables/web-dvwa
+```
+
+**Windows:**  
+Download and install [Docker Desktop](https://www.docker.com/products/docker-desktop/), then run:
+```powershell
+docker run --rm -p 80:80 vulnerables/web-dvwa
+```
+
+### Run the test
+
+Once DVWA is running, visit `http://localhost/dvwa/setup.php` to initialise the database, then:
+
+```bash
+python bruteforce.py http://localhost/dvwa/login.php \
+  -u admin \
+  -w wordlist.txt \
+  --user-field username \
+  --pass-field password \
+  --fail-string "Login failed" \
+  -t 5 -v
+```
+
+The default DVWA password (`password`) is in the included wordlist, so you should get a hit quickly.
 
 ---
 
