@@ -1,4 +1,4 @@
-# bruteforce.py
+# BruteForcer
 
 A fast, threaded HTTP login brute-forcer written in Python 3.10+.  
 Built for penetration testers and CTF players.
@@ -23,13 +23,20 @@ Built for penetration testers and CTF players.
 
 ---
 
-## Requirements
+## Installation
 
-```
-pip install requests
+**Clone the repo:**
+```bash
+git clone https://github.com/silas-vale/BruteForcer.git
+cd BruteForcer
 ```
 
-Python 3.10+ (uses `dict | None` union type hints).
+**Install dependencies:**
+```bash
+pip install -r requirements.txt
+```
+
+Requires Python 3.10+.
 
 ---
 
